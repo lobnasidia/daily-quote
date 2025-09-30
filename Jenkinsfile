@@ -10,8 +10,6 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Utiliser Docker de Minikube si besoin
-                    sh 'eval $(minikube docker-env)'
                     sh "docker build -t ${IMAGE_NAME}:latest ."
                 }
             }
