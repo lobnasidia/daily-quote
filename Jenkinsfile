@@ -4,7 +4,8 @@ pipeline {
     environment {
         IMAGE_NAME = "daily-quote-app"
         DEPLOY_FILE = "daily-quote.yml"
-    }
+        KUBECONFIG = "/var/lib/jenkins/.kube/config"
+}
 
     stages {
         stage('Build Docker Image') {
