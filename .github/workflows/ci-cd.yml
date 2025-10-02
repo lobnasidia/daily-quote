@@ -1,0 +1,39 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v3
+
+    - name: Set up Kubernetes (Kind)
+      uses: engineerd/setup-kind@v0.6.0
+      with:
+        version: v0.20.0
+
+    - name: Build Docker image
+      run: |
+        docker build -t daily-quote-app:latest .
+
+    - name: Load image into Kind cluster
+      run: |
+        kind load docker-image daily-quote-app:latest
+
+    - name: Apply Kubernetes manifests
+      run: |
+        kubectl apply -f daily-quote.yml
+
+    - name: Verify deployment
+      run: |
+        kubectl get pods
+        kubectl get svc
