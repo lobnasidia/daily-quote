@@ -13,7 +13,7 @@ const quotes = [
 app.get('/', (req, res) => {
   // Sélection aléatoire d'une citation
   const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-  res.send(`<h1>💡 Citation du jour</h1><p>${randomQuote}</p>`);
+  res.send(`<h1>💡💡 Citation du jour</h1><p>${randomQuote}</p>`);
 });
 
 app.listen(port, () => {
