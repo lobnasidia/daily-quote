@@ -1,58 +1,24 @@
-name: CI/CD Daily Quote
+name: build-and-deploy
 
 on:
   push:
     branches:
       - main
-  pull_request:
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      # 1️⃣ Checkout le code
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # 2️⃣ Installer Docker Buildx pour les builds multi-plateformes
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # 3️⃣ Installer Node (si nécessaire pour ton app)
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/checkout@v3
+      - uses: engineerd/setup-kind@v0.6.2
         with:
-          node-version: '18'
-
-      # 4️⃣ Installer kind (Kubernetes in Docker)
-      - name: Setup kind
-        uses: engineerd/setup-kind@v0.8.1
-
-      # 5️⃣ Créer un cluster Kubernetes local
-      - name: Create Kind cluster
-        run: |
-          kind create cluster --name daily-quote-cluster
-
-      # 6️⃣ Configurer kubectl pour utiliser le cluster kind
-      - name: Setup KUBECONFIG
-        run: |
-          export KUBECONFIG="$(kind get kubeconfig-path --name=daily-quote-cluster)"
-          echo "KUBECONFIG=$KUBECONFIG" >> $GITHUB_ENV
-
-      # 7️⃣ Build l'image Docker
+          version: "v0.24.0"
       - name: Build Docker image
-        run: docker build -t daily-quote-app:latest .
-
-      # 8️⃣ Charger l'image dans kind (pas besoin de Docker Hub)
-      - name: Load image into Kind
-        run: kind load docker-image daily-quote-app:latest --name daily-quote-cluster
-
-      # 9️⃣ Déployer sur Kubernetes
+        run: |
+          docker build -t daily-quote-app:latest .
       - name: Deploy to Kubernetes
-        run: kubectl apply -f daily-quote.yml --validate=false
-
-      # 🔟 Vérifier le déploiement
+        run: |
+          kubectl apply -f daily-quote.yml
       - name: Verify Deployment
         run: |
           kubectl get pods
