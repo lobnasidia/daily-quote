@@ -1,4 +1,4 @@
-name: build-and-deploy
+name: Build and Deploy Daily Quote App Locally
 
 on:
   push:
@@ -6,22 +6,35 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: engineerd/setup-kind@v0.6.2
-        with:
-          version: "v0.24.0"
+      # 1️⃣ Récupérer le code
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      # 2️⃣ Configurer Docker pour utiliser Minikube
+      - name: Set up Minikube Docker environment
+        run: |
+          curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          chmod +x minikube
+          sudo mv minikube /usr/local/bin/
+          minikube start
+          eval $(minikube -p minikube docker-env)
+
+      # 3️⃣ Build l'image directement dans Minikube
       - name: Build Docker image
         run: |
           docker build -t daily-quote-app:latest .
+
+      # 4️⃣ Déployer sur Kubernetes
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f daily-quote.yml
-      - name: Wait for pods to be running
-        run: |
           kubectl wait --for=condition=Ready pods -l app=daily-quote --timeout=120s
+
+      # 5️⃣ Vérification
       - name: Verify Deployment
         run: |
           kubectl get pods
